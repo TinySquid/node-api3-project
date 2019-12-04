@@ -1,5 +1,6 @@
 const express = require('express');
 
+const postDb = require('../posts/postDb');
 const db = require('./userDb');
 
 const router = express.Router();
@@ -20,7 +21,14 @@ router.post('/', validateUser, (req, res) => {
 router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   // do your magic!
   // db.
-
+  const id = req.params.id;
+  postDb.insert({ user_id: id, text: req.body.text })
+    .then(post => {
+      res.status(201).json(post);
+    })
+    .catch(error => {
+      res.status(500).json({ message: "Could not add post to database." });
+    })
 });
 
 router.get('/', (req, res) => {
@@ -133,7 +141,6 @@ function validatePost(req, res, next) {
   } else {
     res.status(400).json({ message: "Missing post data" });
   }
-
 }
 
 module.exports = router;
