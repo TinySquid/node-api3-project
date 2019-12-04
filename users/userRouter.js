@@ -17,8 +17,10 @@ router.post('/', validateUser, (req, res) => {
     });
 });
 
-router.post('/:id/posts', (req, res) => {
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   // do your magic!
+  // db.
+
 });
 
 router.get('/', (req, res) => {
@@ -36,20 +38,55 @@ router.get('/', (req, res) => {
     })
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUserId, (req, res) => {
   // do your magic!
+  res.status(200).json(req.user);
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validateUserId, (req, res) => {
   // do your magic!
+  const id = req.user.id;
+  db.getUserPosts(id)
+    .then(posts => {
+      if (posts.length > 0) {
+        res.status(200).json(posts);
+      } else {
+        res.status(404).json({ message: "No posts found for specified user." });
+      }
+    })
+    .catch(error => {
+      res.status(500).json({ message: "Could not get posts by user." });
+    });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUserId, (req, res) => {
   // do your magic!
+  db.remove(req.user.id)
+    .then(() => {
+      res.status(200).json();
+    })
+    .catch(error => {
+      res.status(500).json({ message: "Could not delete specified user." });
+    })
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, validateUser, (req, res) => {
   // do your magic!
+  const id = req.user.id;
+
+  db.update(id, { name: req.body.name })
+    .then(() => {
+      db.getById(id)
+        .then(user => {
+          res.status(200).json(user);
+        })
+        .catch(error => {
+          res.status(500).json({ message: "Could not get updated user." });
+        });
+    })
+    .catch(error => {
+      res.status(500).json({ message: "Could not update user." });
+    });
 });
 
 //custom middleware
@@ -62,6 +99,7 @@ function validateUserId(req, res, next) {
     .then(user => {
       if (user) {
         req.user = user;
+        next();
       } else {
         res.status(400).json({ message: "Invalid user id." });
       }
