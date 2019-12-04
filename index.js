@@ -12,6 +12,7 @@ const logger = require('./logger/logger');
 
 //ROUTES
 const userRouter = require('./users/userRouter');
+const postRouter = require('./posts/postRouter');
 
 const port = process.env.PORT || 4000;
 
@@ -28,6 +29,8 @@ server.get('/', (req, res) => {
 });
 
 server.use('/users', userRouter);
+
+server.use('/posts', postRouter);
 
 server.use((err, req, res, next) => {
   console.error(err);
