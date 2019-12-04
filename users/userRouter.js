@@ -4,8 +4,17 @@ const db = require('./userDb');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.post('/', validateUser, (req, res) => {
   // do your magic!
+  const { name } = req.body;
+
+  db.insert({ name: name })
+    .then(user => {
+      res.status(201).json(user);
+    })
+    .catch(error => {
+      res.status(500).json({ message: "Could not add user to database." });
+    });
 });
 
 router.post('/:id/posts', (req, res) => {
@@ -14,6 +23,17 @@ router.post('/:id/posts', (req, res) => {
 
 router.get('/', (req, res) => {
   // do your magic!
+  db.get()
+    .then(users => {
+      if (users) {
+        res.status(200).json(users);
+      } else {
+        res.status(404).json({ message: "No users found." });
+      }
+    })
+    .catch(error => {
+      res.status(500).json({ message: "There was an error retrieving users from database." });
+    })
 });
 
 router.get('/:id', (req, res) => {
